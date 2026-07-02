@@ -116,7 +116,7 @@ elif app_mode == "Histórico de Análises":
                 with c_img:
                     if os.path.exists(item.image_path):
                         img_display = Image.open(item.image_path)
-                        st.image(img_display, use_container_width=True)
+                        st.image(img_display, use_column_width=True)
                     else:
                         st.warning("Arquivo físico local indisponível.")
                         
