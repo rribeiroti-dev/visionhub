@@ -24,14 +24,22 @@ logger = logging.getLogger("CVApp")
 
 def get_database_url() -> str:
     """
-    Recupera a URL do banco do st.secrets (Streamlit Cloud/Local) 
-    ou de variáveis de ambiente padrão (Render).
+    Recupera a URL do banco de dados priorizando variáveis de ambiente (Render)
+    e depois st.secrets (Streamlit Cloud).
     """
-    if "DATABASE_URL" in st.secrets:
-        url = st.secrets["DATABASE_URL"]
-    else:
-        url = os.environ.get("DATABASE_URL", "")
+    # 1. Tenta pegar primeiro da variável de ambiente padrão (Render)
+    url = os.environ.get("DATABASE_URL", "")
     
+    # 2. Se estiver vazia, tenta buscar com segurança no st.secrets (Local/Streamlit Cloud)
+    if not url:
+        try:
+            if "DATABASE_URL" in st.secrets:
+                url = st.secrets["DATABASE_URL"]
+        except Exception:
+            # Caso não haja secrets configurados, evita que a aplicação quebre
+            pass
+
+    # Ajuste automático de compatibilidade do driver do SQLAlchemy
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql+psycopg://", 1)
     elif url.startswith("postgresql://"):
